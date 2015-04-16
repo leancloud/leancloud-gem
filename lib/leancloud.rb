@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 require 'yaml'
 require 'xcodeproj'
@@ -286,7 +287,25 @@ class LeanCloud
     exit
   end
 
+  def init_leanfile(opts)
+    config = {
+      'version' => opts[:sdk_version] || '请替换成LeanCloud SDK版本号',
+      'base_sdk_version' => opts[:ios_version] || 'iOS 版本号',
+      'xcodeproj' => opts[:name] || '请替换项目名称',
+      'target' => opts[:target] ||'请替换项目Target',
+      'components' => (opts[:components].split(',') if opts[:components])
+    }
+    File.open @leanfile_path, 'w' do |f|
+      f.write config.to_yaml
+    end
+  end
+
   public
+
+  def init(opts)
+    init_leanfile opts
+    puts "Leanfile created!"
+  end
 
   def install(file = nil)
     @leanfile_path = file if file
