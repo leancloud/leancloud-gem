@@ -5,6 +5,24 @@ require 'clactive'
 require 'leancloud'
 
 CLActive do
+
+  subcmd :init do
+    option :components, '-c c', '--components=componenets','Leancloud SDK componenets.'
+    option :sdk_version, '-v v', '--version=sdk_version','Leancloud SDK version.'
+    option :ios_version, '-i i', '--ios=ios_version','Leancloud SDK version.'
+    option :name, '-n n', '--name=name','XCode project name.'
+    option :target, '-t t', '--target=target','XCode project target.'
+    action do |opt|
+      begin
+        leancloud = LeanCloud.new
+        leancloud.init(opt)
+      rescue SignalException
+      rescue Exception => e
+        raise e
+      end
+    end
+  end
+
   subcmd :install do
     option :file, '-f f', '--file=file', 'Install by the specified Leanfile'
     action do |opt|
@@ -17,4 +35,5 @@ CLActive do
       end
     end
   end
+
 end
