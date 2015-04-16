@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'clactive'
+require 'leancloud'
+
+CLActive do
+  subcmd :install do
+    option :file, '-f f', '--file=file', 'Install by the specified Leanfile'
+    action do |opt|
+      begin
+        leancloud = LeanCloud.new
+        leancloud.install(opt[:file])
+      rescue SignalException
+      rescue Exception => e
+        raise e
+      end
+    end
+  end
+end
