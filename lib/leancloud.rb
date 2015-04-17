@@ -6,6 +6,7 @@ require 'xcodeproj'
 require 'open-uri'
 require 'colorize'
 require 'fileutils'
+require 'mustache'
 require 'erb'
 
 # Main class
@@ -23,6 +24,31 @@ class LeanCloud
     @lean_group = 'LeanCloud'
     @sdk_prefix = 'AVOSCloud'
     @sdk_url_prefix = 'https://download.avoscloud.com/1/downloadSDK?'
+
+    @leanfile_template = <<-EOT.gsub(/^[ \t]+/, '')
+    # vim:ft=yaml
+    # -*- mode: yaml -*-
+
+    # LeanCloud SDK version
+    version: {{version}}
+
+    # Your project base SDK version
+    base_sdk_version: {{base_sdk_version}}
+
+    # Your project name (optional)
+    # If empty, defaults to the single project in current directory
+    xcodeproj: {{xcodeproj}}
+
+    # Target name of your project (optional)
+    # If empty, defaults to the target which matches project's name
+    target: {{target}}
+
+    # LeanCloud SDK components
+    components:
+    {{#components}}
+        - {{value}}
+    {{/components}}
+    EOT
 
     @system_frameworks = %w(
       CFNetwork
@@ -71,10 +97,15 @@ class LeanCloud
   end
 
   def target_with_name(name)
-    targets = project.targets.select { |target| target.name.eql?(name) }
-    target  = targets.first
-    patch_sdk_version(target) if target
-    target
+    if name
+      targets = project.targets.select { |target| target.name.eql?(name) }
+      target  = targets.first
+      patch_sdk_version(target) if target
+      target
+    else
+      name = File.basename(project.path, '.*')
+      target_with_name(name)
+    end
   end
 
   def search_single_xcodeproj
@@ -245,6 +276,26 @@ class LeanCloud
     end
   end
 
+  def add_build_setting(key, value)
+    target.build_configurations.each do |bc|
+      values = []
+      origin_values = bc.build_settings[key]
+      values.push(origin_values).flatten! if origin_values
+      values << value unless values.include?(value)
+      bc.build_settings[key] = values
+    end
+  end
+
+  def add_framework_search_path
+    add_build_setting('FRAMEWORK_SEARCH_PATHS', "\"$(SRCROOT)/#{@root_path}\"")
+  end
+
+  def add_linker_flags_if_needed
+    if Gem::Version.new(base_sdk_version) < Gem::Version.new('5.0')
+      add_build_setting('OTHER_LDFLAGS', '-fobjc-arc')
+    end
+  end
+
   def save_project
     project.save
   end
@@ -261,6 +312,8 @@ class LeanCloud
     unzip_sdk
     remove_legency_frameworks
     add_frameworks
+    add_framework_search_path
+    add_linker_flags_if_needed
     add_system_frameworks
     add_system_libraries
     save_project
@@ -288,15 +341,26 @@ class LeanCloud
   end
 
   def init_leanfile(opts)
+    components = []
+
+    if opts[:components]
+      opts[:components].split(',').each do |component|
+        components << { 'value' => component.strip }
+      end
+    end
+
     config = {
-      'version' => opts[:sdk_version] || '请替换成LeanCloud SDK版本号',
-      'base_sdk_version' => opts[:ios_version] || 'iOS 版本号',
-      'xcodeproj' => opts[:name] || '请替换项目名称',
-      'target' => opts[:target] ||'请替换项目Target',
-      'components' => (opts[:components].split(',') if opts[:components])
+      'version' => opts[:sdk_version],
+      'base_sdk_version' => opts[:ios_version],
+      'xcodeproj' => opts[:name],
+      'target' => opts[:target],
+      'components' => components
     }
+
+    content = Mustache.render(@leanfile_template, config)
+
     File.open @leanfile_path, 'w' do |f|
-      f.write config.to_yaml
+      f.write content
     end
   end
 
