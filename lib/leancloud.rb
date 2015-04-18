@@ -26,9 +26,10 @@ class LeanCloud
     @sdk_url_prefix = 'https://download.avoscloud.com/1/downloadSDK?'
 
     @leanfile_template = <<-EOT.gsub(/^[ \t]+/, '')
-    # vim:ft=yaml
-    # -*- mode: yaml -*-
+    # Leanfile
+    # -*- mode: yaml -*- vim:ft=yaml
 
+    ---
     # LeanCloud SDK version
     version: {{version}}
 
@@ -46,7 +47,7 @@ class LeanCloud
     # LeanCloud SDK components
     components:
     {{#components}}
-        - {{value}}
+    - {{value}}
     {{/components}}
     EOT
 
@@ -340,24 +341,39 @@ class LeanCloud
     exit
   end
 
-  def init_leanfile(opts)
-    components = []
+  def validate_version_number(version)
+    return if version.nil?
+    exit_with_error("Illegal version numner: #{version}") unless Gem::Version.correct?(version)
+  end
 
-    if opts[:components]
-      opts[:components].split(',').each do |component|
-        components << { 'value' => component.strip }
+  def validate_options(opts)
+    validate_version_number(opts[:sdk_version])
+    validate_version_number(opts[:ios_version])
+  end
+
+  def component_list(components)
+    result = []
+
+    unless components.nil?
+      components.split(',').each do |component|
+        value = component.strip
+        result << { 'value' => value } unless value.empty?
       end
     end
 
-    config = {
+    result
+  end
+
+  def init_leanfile(opts)
+    components = component_list(opts[:components])
+
+    content = Mustache.render(@leanfile_template, {
       'version' => opts[:sdk_version],
       'base_sdk_version' => opts[:ios_version],
       'xcodeproj' => opts[:name],
       'target' => opts[:target],
       'components' => components
-    }
-
-    content = Mustache.render(@leanfile_template, config)
+    })
 
     File.open @leanfile_path, 'w' do |f|
       f.write content
@@ -367,8 +383,10 @@ class LeanCloud
   public
 
   def init(opts)
+    validate_options(opts)
+    exist = File.exist?(@leanfile_path)
     init_leanfile opts
-    puts "Leanfile created!"
+    puts "#{exist ? 'Reinitialized existing' : 'Initialized'} Leanfile"
   end
 
   def install(file = nil)
