@@ -38,4 +38,14 @@ CLActive do
     end
   end
 
+  subcmd :upload_symbol do
+    option :id,   '-i i', '--id=id',     'App ID'
+    option :key,  '-k k', '--key=key',   'App Key'
+    option :path, '-p p', '--path=path', 'DWARF directory path'
+    action do |opts|
+      leancloud = LeanCloud::HTTP.new
+      leancloud.upload_symbol(opts)
+    end
+  end
+
 end
