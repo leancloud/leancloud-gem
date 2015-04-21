@@ -6,6 +6,11 @@ require 'leancloud'
 
 CLActive do
 
+  option :version, '-v', '--version', 'LeanCloud Gem version'
+  action do |opts|
+    puts LeanCloud::VERSION if version?
+  end
+
   subcmd :init do
     option :sdk_version, '-v v', '--version=sdk_version',    'Leancloud SDK version'
     option :ios_version, '-i i', '--ios=ios_version',        'Project base SDK version'
