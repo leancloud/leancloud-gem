@@ -4,7 +4,7 @@ module LeanCloud
 
   # LeanCloud HTTP manager
   class LeanHTTP < LeanObject
-    BASE_URL = 'https://cn-stg1.avoscloud.com/1/'
+    BASE_URL = 'https://api.leancloud.cn/1/'
 
     protected
 

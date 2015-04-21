@@ -5,7 +5,7 @@ require 'leancloud'
 Gem::Specification.new do |s|
   s.name          = 'leancloud'
   s.version       = LeanCloud::VERSION
-  s.date          = '2015-04-14'
+  s.date          = '2015-04-21'
   s.summary       = 'LeanCloud'
   s.description   = 'LeanCloud command line tool.'
   s.authors       = ['Tianyong Tang']
