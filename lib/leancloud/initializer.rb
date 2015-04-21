@@ -18,7 +18,8 @@ module LeanCloud
       # -*- mode: yaml -*- vim:ft=yaml
 
       ---
-      # LeanCloud SDK version
+      # LeanCloud SDK version (optional)
+      # If empty, defaults to the latest version
       version: {{version}}
 
       # Your project base SDK version

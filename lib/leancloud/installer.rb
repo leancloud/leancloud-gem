@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 require 'yaml'
+require 'json'
+require 'net/http'
 require 'xcodeproj'
 require 'open-uri'
 require 'fileutils'
@@ -129,7 +131,6 @@ module LeanCloud
     end
 
     def make_validation
-      exit_with_error('Version not specified') unless version
       exit_with_error('Base SDK version not specified') unless base_sdk_version
       exit_with_error("Project #{project_path} can not be opened") unless project
       exit_with_error('Target not found') unless target
@@ -167,7 +168,15 @@ module LeanCloud
       result
     end
 
+    def fetch_latest_version
+      json = Net::HTTP.get(URI('https://download.leancloud.cn/sdk/latest.json'))
+      version_info = JSON.parse(json)
+      version_info['ios']
+    end
+
     def sdk_query_string
+      version = fetch_latest_version if version.nil?
+
       hash = {
         'type' => 'ios',
         'components' => component_param_arr.join(','),
