@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors       = ['Tianyong Tang']
   s.email         = 'ttang@leancloud.rocks'
   s.files         = Dir['lib/**/*.rb']
-  s.executables   = ['leancloud']
+  s.executables   = ['leancloud', 'leancloud_dump_syms']
   s.require_paths = ['lib']
   s.homepage      = 'https://leancloud.cn/'
   s.license       = 'MIT'

@@ -41,10 +41,10 @@ CLActive do
   subcmd :upload_symbol do
     option :id,   '-i i', '--id=id',     'App ID'
     option :key,  '-k k', '--key=key',   'App Key'
-    option :path, '-p p', '--path=path', 'DWARF directory path'
+    option :file, '-f f', '--file=file', 'DSYM file path'
     action do |opts|
-      leancloud = LeanCloud::HTTP.new
-      leancloud.upload_symbol(opts)
+      leancloud = LeanCloud::SymbolUploader.new(opts)
+      leancloud.upload
     end
   end
 
