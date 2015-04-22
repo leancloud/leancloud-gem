@@ -1,3 +1,6 @@
+SHELL = /bin/sh
+
 install:
-	gem build leancloud.gemspec
-	sudo gem install leancloud-0.0.1.gem
+	rm -rf *.gem
+	gem build leancloud.gemspec 2>/dev/null
+	sudo gem install --no-wrappers *.gem

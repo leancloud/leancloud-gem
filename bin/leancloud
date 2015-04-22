@@ -6,16 +6,21 @@ require 'leancloud'
 
 CLActive do
 
+  option :version, '-v', '--version', 'LeanCloud Gem version'
+  action do |opts|
+    puts LeanCloud::VERSION if version?
+  end
+
   subcmd :init do
-    option :components, '-c c', '--components=componenets','Leancloud SDK componenets.'
-    option :sdk_version, '-v v', '--version=sdk_version','Leancloud SDK version.'
-    option :ios_version, '-i i', '--ios=ios_version','Leancloud SDK version.'
-    option :name, '-n n', '--name=name','XCode project name.'
-    option :target, '-t t', '--target=target','XCode project target.'
-    action do |opt|
+    option :sdk_version, '-v v', '--version=sdk_version',    'Leancloud SDK version'
+    option :ios_version, '-i i', '--ios=ios_version',        'Project base SDK version'
+    option :name,        '-n n', '--name=name',              'XCode project name'
+    option :target,      '-t t', '--target=target',          'XCode project target'
+    option :components,  '-c c', '--components=componenets', 'Leancloud SDK componenets'
+    action do |opts|
       begin
-        leancloud = LeanCloud.new
-        leancloud.init(opt)
+        leancloud = LeanCloud::Initializer.new(opts)
+        leancloud.create
       rescue SignalException
       rescue Exception => e
         raise e
@@ -25,14 +30,26 @@ CLActive do
 
   subcmd :install do
     option :file, '-f f', '--file=file', 'Install by the specified Leanfile'
-    action do |opt|
+    action do |opts|
       begin
-        leancloud = LeanCloud.new
-        leancloud.install(opt[:file])
+        leancloud = LeanCloud::Installer.new
+        leancloud.install(opts[:file])
       rescue SignalException
       rescue Exception => e
         raise e
+      ensure
+        leancloud.destroy
       end
+    end
+  end
+
+  subcmd :upload_symbol do
+    option :id,   '-i i', '--id=id',     'App ID'
+    option :key,  '-k k', '--key=key',   'App Key'
+    option :file, '-f f', '--file=file', 'DSYM file path'
+    action do |opts|
+      leancloud = LeanCloud::SymbolUploader.new(opts)
+      leancloud.upload
     end
   end
 
