@@ -23,15 +23,19 @@ module LeanCloud
       report_error('DSYM file not found') unless dsym_path
     end
 
+    def tmp_dir
+      @tmp_dir ||= File.join(Dir.tmpdir(), '.leancloud')
+    end
+
     def dump_symbol
       dsym_file = @options[:file]
 
-      FileUtils.mkdir_p('/tmp/.leancloud')
+      FileUtils.mkdir_p(tmp_dir)
 
       cmd = <<-EOC
-      leancloud_dump_syms -a armv7  #{dsym_file} > /tmp/.leancloud/armv7.sym
-      leancloud_dump_syms -a armv7s #{dsym_file} > /tmp/.leancloud/armv7s.sym
-      leancloud_dump_syms -a arm64  #{dsym_file} > /tmp/.leancloud/arm64.sym
+      leancloud_dump_syms -a armv7  #{dsym_file} > #{tmp_dir}/armv7.sym
+      leancloud_dump_syms -a armv7s #{dsym_file} > #{tmp_dir}/armv7s.sym
+      leancloud_dump_syms -a arm64  #{dsym_file} > #{tmp_dir}/arm64.sym
       EOC
 
       system(cmd)
@@ -40,9 +44,9 @@ module LeanCloud
     def symbol_fields
       fields = []
 
-      { 'armv7'  => '/tmp/.leancloud/armv7.sym',
-        'armv7s' => '/tmp/.leancloud/armv7s.sym',
-        'arm64'  => '/tmp/.leancloud/arm64.sym'
+      { 'armv7'  => "#{tmp_dir}/armv7.sym",
+        'armv7s' => "#{tmp_dir}/armv7s.sym",
+        'arm64'  => "#{tmp_dir}/arm64.sym"
       }.each do |arch, path|
         next if !File.readable?(path) or File.zero?(path)
         fields << "-F \"symbol_file_#{arch}=@#{path}\""
