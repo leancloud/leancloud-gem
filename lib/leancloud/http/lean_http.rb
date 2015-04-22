@@ -4,7 +4,7 @@ module LeanCloud
 
   # LeanCloud HTTP manager
   class LeanHTTP < LeanObject
-    BASE_URL = 'https://api.leancloud.cn/1/'
+    BASE_URL = 'https://api.leancloud.cn/1.1/'
 
     protected
 

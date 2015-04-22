@@ -228,7 +228,7 @@ module LeanCloud
     end
 
     def clean_stash
-      system("rm -rf #{@stash_path}")
+      system("rm -rf #{@stash_path}") unless '/' == @stash_path
     end
 
     def unzip_sdk
