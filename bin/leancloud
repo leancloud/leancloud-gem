@@ -44,9 +44,10 @@ CLActive do
   end
 
   subcmd :upload_symbol do
-    option :id,   '-i i', '--id=id',     'App ID'
-    option :key,  '-k k', '--key=key',   'App Key'
-    option :file, '-f f', '--file=file', 'DSYM file path'
+    option :id,      '-i i', '--id=id',     'App ID'
+    option :key,     '-k k', '--key=key',   'App Key'
+    option :file,    '-f f', '--file=file', 'DSYM file path'
+    option :verbose, '-v',   '--verbose',   'Verbose mode'
     action do |opts|
       leancloud = LeanCloud::SymbolUploader.new(opts)
       leancloud.upload

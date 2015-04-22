@@ -13,6 +13,10 @@ module LeanCloud
 
     private
 
+    def verbose
+      @options[:verbose]
+    end
+
     def dsym_path
       path = @options[:file]
       @dsym_file ||= path if !path.nil? and File.readable?(path)
@@ -25,7 +29,7 @@ module LeanCloud
     end
 
     def tmp_dir
-      @tmp_dir ||= File.join(Dir.tmpdir(), '.leancloud')
+      @tmp_dir ||= File.join(Dir.tmpdir(), 'cn.leancloud/symbols')
     end
 
     def dump_symbol
@@ -61,7 +65,7 @@ module LeanCloud
 
       return if fields.empty?
 
-      form_fields = fields.join(' ')
+      form_fields = fields.join(" \\\n")
       url = api('stats/breakpad/symbols')
 
       cmd = <<-EOC.gsub(/^[ \t]+/, '')
@@ -69,17 +73,21 @@ module LeanCloud
       -H "X-AVOSCloud-Application-Id: #{@options[:id]}" \\
       -H "X-AVOSCloud-Application-Key: #{@options[:key]}" \\
       #{form_fields} \\
-      #{url}
+      #{url} >/dev/null 2>&1
       EOC
 
+      puts 'Uploading symbol files...'
+      puts "Command for uploading:\n#{cmd}" if verbose
+
       unless system(cmd)
-        msg = "Can not upload symbol files with following command:\n#{cmd}"
-        report_error(msg)
+        report_error('Failed to upload symbol files.')
+      else
+        puts 'Uploaded symbol files.'
       end
     end
 
     def report_error(msg)
-      raise msg
+      fail msg
     end
 
     public
