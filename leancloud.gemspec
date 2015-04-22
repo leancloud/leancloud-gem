@@ -16,6 +16,8 @@ Gem::Specification.new do |s|
   s.homepage      = 'https://leancloud.cn/'
   s.license       = 'MIT'
 
+  s.required_ruby_version = '~> 2.0'
+
   s.add_runtime_dependency 'xcodeproj', '~> 0.23.1'
   s.add_runtime_dependency 'colorize',  '~> 0.7.5'
   s.add_runtime_dependency 'clactive',  '~> 0.1.0'

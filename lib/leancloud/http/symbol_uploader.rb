@@ -37,31 +37,40 @@ module LeanCloud
       system(cmd)
     end
 
-    def send_symbol
-      id  = @options[:id]
-      key = @options[:key]
-      url = api('stats/breakpad/symbols')
+    def symbol_fields
+      fields = []
 
-      armv7  = '/tmp/.leancloud/armv7.sym'
-      armv7s = '/tmp/.leancloud/armv7s.sym'
-      arm64  = '/tmp/.leancloud/arm64.sym'
+      { 'armv7'  => '/tmp/.leancloud/armv7.sym',
+        'armv7s' => '/tmp/.leancloud/armv7s.sym',
+        'arm64'  => '/tmp/.leancloud/arm64.sym'
+      }.each do |arch, path|
+        next if !File.readable?(path) or File.zero?(path)
+        fields << "-F \"symbol_file_#{arch}=@#{path}\""
+      end
+
+      fields
+    end
+
+    def send_symbol
+      fields = symbol_fields
+
+      return if fields.empty?
+
+      form_fields = fields.join(' ')
+      url = api('stats/breakpad/symbols')
 
       cmd = <<-EOC.gsub(/^[ \t]+/, '')
       curl -X POST \\
-      -H "X-AVOSCloud-Application-Id: #{id}" \\
-      -H "X-AVOSCloud-Application-Key: #{key}" \\
-      -F "symbol_file_armv7=@#{armv7}" \\
-      -F "symbol_file_armv7s=@#{armv7s}" \\
-      -F "symbol_file_arm64=@#{arm64}" \\
+      -H "X-AVOSCloud-Application-Id: #{@options[:id]}" \\
+      -H "X-AVOSCloud-Application-Key: #{@options[:key]}" \\
+      #{form_fields} \\
       #{url}
       EOC
 
-      msg = <<-EOM.gsub(/^[ \t]+/, '')
-      Can not upload symbol files with following command:
-      #{cmd}
-      EOM
-
-      report_error(msg) unless system(cmd)
+      unless system(cmd)
+        msg = "Can not upload symbol files with following command:\n#{cmd}"
+        report_error(msg)
+      end
     end
 
     def report_error(msg)
