@@ -1,3 +1,4 @@
+require 'tmpdir'
 require 'fileutils'
 require 'leancloud/http/lean_http'
 
