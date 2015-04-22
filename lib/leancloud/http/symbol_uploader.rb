@@ -1,5 +1,6 @@
 require 'tmpdir'
 require 'fileutils'
+require 'mustache'
 require 'leancloud/http/lean_http'
 
 module LeanCloud
@@ -19,7 +20,11 @@ module LeanCloud
 
     def dsym_path
       path = @options[:file]
-      @dsym_file ||= path if !path.nil? and File.readable?(path)
+      @dsym_path ||= path if !path.nil? and File.readable?(path)
+    end
+
+    def dsym_macho
+      @dsym_macho ||= Dir.glob(File.join(dsym_path, 'Contents/Resources/DWARF/*')).first
     end
 
     def validate_options
@@ -32,16 +37,28 @@ module LeanCloud
       @tmp_dir ||= File.join(Dir.tmpdir(), 'cn.leancloud/symbols')
     end
 
-    def dump_symbol
-      dsym_file = @options[:file]
+    def dsym_archs
+      info = `lipo -info #{dsym_macho}`
+      arch_list = info[/(?<=:)([^:]*)$/].strip
+      arch_list.split(' ')
+    end
 
+    def dump_cmd_template
+      <<-EOT.gsub(/^[ \t]+/, '')
+      {{#archs}}
+      leancloud_dump_syms -a {{name}} #{dsym_path} > #{tmp_dir}/{{name}}.sym
+      {{/archs}}
+      EOT
+    end
+
+    def dump_symbol
       FileUtils.mkdir_p(tmp_dir)
 
-      cmd = <<-EOC
-      leancloud_dump_syms -a armv7  #{dsym_file} > #{tmp_dir}/armv7.sym
-      leancloud_dump_syms -a armv7s #{dsym_file} > #{tmp_dir}/armv7s.sym
-      leancloud_dump_syms -a arm64  #{dsym_file} > #{tmp_dir}/arm64.sym
-      EOC
+      cmd = Mustache.render(dump_cmd_template, {
+        archs: dsym_archs.map { |arch| { 'name' => arch } }
+      })
+
+      puts "Command for dump symbol file:\n#{cmd}" if verbose
 
       system(cmd)
     end
@@ -49,10 +66,8 @@ module LeanCloud
     def symbol_fields
       fields = []
 
-      { 'armv7'  => "#{tmp_dir}/armv7.sym",
-        'armv7s' => "#{tmp_dir}/armv7s.sym",
-        'arm64'  => "#{tmp_dir}/arm64.sym"
-      }.each do |arch, path|
+      dsym_archs.each do |arch|
+        path = "#{tmp_dir}/#{arch}.sym"
         next if !File.readable?(path) or File.zero?(path)
         fields << "-F \"symbol_file_#{arch}=@#{path}\""
       end
