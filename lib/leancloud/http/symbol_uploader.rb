@@ -103,14 +103,16 @@ module LeanCloud
       -H "X-AVOSCloud-Application-Id: #{@options[:id]}" \\
       -H "X-AVOSCloud-Application-Key: #{@options[:key]}" \\
       #{form_fields} \\
-      #{url} >/dev/null 2>&1
+      #{url} 2>/dev/null
       EOC
 
       puts "Command for uploading symbol files:\n#{cmd}" if verbose?
       puts 'Uploading symbol files...'
 
-      unless system(cmd)
-        report_error('Failed to upload symbol files.')
+      response = %x(#{cmd})
+
+      unless '{}' == response
+        report_error("Failed to upload symbol files:\n#{response}")
       else
         puts 'Uploaded symbol files.'
       end
