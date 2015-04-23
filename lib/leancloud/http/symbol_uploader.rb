@@ -49,9 +49,9 @@ module LeanCloud
     end
 
     def validate_options
+      exit_with_info('DSYM file not found') unless dsym_path
       report_error('LeanCloud App ID not found') unless @options[:id]
       report_error('LeanCloud App Key not found') unless @options[:key]
-      report_error('DSYM file not found') unless dsym_path
     end
 
     def symbol_path(arch)

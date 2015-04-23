@@ -14,6 +14,11 @@ module LeanCloud
       exit
     end
 
+    def exit_with_info(msg)
+      puts msg
+      exit
+    end
+
     def show_success(msg)
       puts(msg.colorize(:green))
     end
