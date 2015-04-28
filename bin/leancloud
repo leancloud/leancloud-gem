@@ -19,8 +19,8 @@ CLActive do
     option :components,  '-c c', '--components=componenets', 'Leancloud SDK componenets'
     action do |opts|
       begin
-        leancloud = LeanCloud::Initializer.new(opts)
-        leancloud.create
+        initializer = LeanCloud::Initializer.new(opts)
+        initializer.create
       rescue SignalException
       rescue Exception => e
         raise e
@@ -32,13 +32,13 @@ CLActive do
     option :file, '-f f', '--file=file', 'Install by the specified Leanfile'
     action do |opts|
       begin
-        leancloud = LeanCloud::Installer.new
-        leancloud.install(opts[:file])
+        installer = LeanCloud::Installer.new
+        installer.install(opts[:file])
       rescue SignalException
       rescue Exception => e
         raise e
       ensure
-        leancloud.destroy
+        installer.destroy
       end
     end
   end
@@ -49,8 +49,18 @@ CLActive do
     option :file,    '-f f', '--file=file', 'DSYM file path'
     option :verbose, '-v',   '--verbose',   'Verbose mode'
     action do |opts|
-      leancloud = LeanCloud::SymbolUploader.new(opts)
-      leancloud.upload
+      uploader = LeanCloud::SymbolUploader.new(opts)
+      uploader.upload
+    end
+  end
+
+  subcmd :dump_symbol do
+    option :file,    '-f f', '--file=file', 'DSYM file path'
+    option :dest,    '-d d', '--dest=dest', 'Symbol files destination path'
+    option :verbose, '-v',   '--verbose',   'Verbose mode'
+    action do |opts|
+      dumper = LeanCloud::SymbolDumper.new(opts)
+      dumper.dump
     end
   end
 
