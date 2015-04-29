@@ -59,8 +59,15 @@ CLActive do
     option :dest,    '-d d', '--dest=dest', 'Symbol files destination path'
     option :verbose, '-v',   '--verbose',   'Verbose mode'
     action do |opts|
-      dumper = LeanCloud::SymbolDumper.new(opts)
-      dumper.dump
+      begin
+        dumper = LeanCloud::SymbolDumper.new(opts)
+        dumper.dump
+      rescue SignalException
+      rescue Exception => e
+        raise e
+      ensure
+        dumper.destroy
+      end
     end
   end
 

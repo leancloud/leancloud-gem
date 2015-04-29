@@ -1,4 +1,5 @@
 require 'mustache'
+require 'fileutils'
 
 module LeanCloud
 
@@ -46,42 +47,45 @@ module LeanCloud
       end
     end
 
-    def macho_entries
-      entries = []
-
-      list_macho_files do |file|
-        uuids = %x(dwarfdump --uuid #{file})
-        uuids.split("\n").each do |line|
-          next unless line =~ /^UUID/
-          components = line.split(' ')
-          uuid = components[1]
-          entries << {
-            uuid: uuid,
-            arch: components[2][1...-1],
-            dest: File.join(dest_path, "#{uuid}.sym"),
-            file: file
-          }
-        end
-      end
-
-      entries
+    def temp_symbol_file
+      @temp_symbol_file ||= File.join(dest_path, '~.sym')
     end
 
-    def dump_cmd_template
-      <<-EOT.gsub(/^[ \t]+/, '')
-      {{#entries}}
-      leancloud_dump_syms -a {{arch}} {{file}} > {{dest}} 2>/dev/null
-      {{/entries}}
-      EOT
+    def move_temp_symbol_file
+      head = File.open(temp_symbol_file).first
+
+      components = head.split(' ')
+      arch = components[2]
+      uuid = components[3]
+      name = components[4]
+
+      file = File.join(dest_path, name, uuid, "#{name}.sym")
+
+      FileUtils.mkdir_p(File.dirname(file))
+      FileUtils.cp(temp_symbol_file, file)
+    end
+
+    def dump_symbol_file(file)
+      uuids = %x(dwarfdump --uuid #{file})
+      uuids.split("\n").each do |line|
+        next unless line =~ /^UUID/
+        arch = line.split(' ')[2][1...-1]
+        system("leancloud_dump_syms -a #{arch} #{file} > #{temp_symbol_file} 2>/dev/null")
+        move_temp_symbol_file
+      end
     end
 
     def dump_symbols
-      cmd = Mustache.render(dump_cmd_template, { entries: macho_entries })
-      puts cmd if verbose?
-      system(cmd)
+      list_macho_files do |file|
+        dump_symbol_file(file)
+      end
     end
 
     public
+
+    def destroy
+      FileUtils.rm_rf(temp_symbol_file)
+    end
 
     def dump
       make_validation
