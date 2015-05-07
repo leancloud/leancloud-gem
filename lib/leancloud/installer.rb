@@ -254,6 +254,7 @@ module LeanCloud
       references = []
       phase.files.each do |ref|
         file = ref.file_ref
+        next if file.name.nil?
         references << file if file.name.include?(@sdk_prefix)
       end
 
