@@ -1,5 +1,6 @@
 require 'mustache'
 require 'fileutils'
+require 'shellwords'
 
 module LeanCloud
 
@@ -42,8 +43,9 @@ module LeanCloud
       end
 
       files.each do |file|
-        info = %x(lipo -info #{file} 2>/dev/null)
-        yield file unless info.empty?
+        path = Shellwords.escape(file)
+        info = %x(lipo -info #{path} 2>/dev/null)
+        yield path unless info.empty?
       end
     end
 
@@ -67,10 +69,12 @@ module LeanCloud
 
     def dump_symbol_file(file)
       uuids = %x(dwarfdump --uuid #{file})
+      temp  = Shellwords.escape(temp_symbol_file)
+
       uuids.split("\n").each do |line|
         next unless line =~ /^UUID/
         arch = line.split(' ')[2][1...-1]
-        system("leancloud_dump_syms -a #{arch} #{file} > #{temp_symbol_file} 2>/dev/null")
+        system("leancloud_dump_syms -a #{arch} #{file} > #{temp} 2>/dev/null")
         move_temp_symbol_file
       end
     end

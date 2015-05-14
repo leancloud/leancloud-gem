@@ -6,5 +6,5 @@ require 'leancloud/symbol_dumper'
 
 # LeanCloud main module
 module LeanCloud
-  VERSION = '0.0.9'
+  VERSION = '0.0.10'
 end
