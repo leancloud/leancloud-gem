@@ -4,7 +4,10 @@ require 'leancloud/installer'
 require 'leancloud/initializer'
 require 'leancloud/symbol_dumper'
 
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
+
 # LeanCloud main module
 module LeanCloud
-  VERSION = '0.0.10'
+  VERSION = '0.0.11'
 end
