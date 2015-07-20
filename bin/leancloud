@@ -47,6 +47,7 @@ CLActive do
     option :id,      '-i i', '--id=id',     'App ID'
     option :key,     '-k k', '--key=key',   'App Key'
     option :file,    '-f f', '--file=file', 'DSYM file path'
+    option :region,  '-r r', '--region',    'LeanCloud server region'
     option :verbose, '-v',   '--verbose',   'Verbose mode'
     action do |opts|
       uploader = LeanCloud::SymbolUploader.new(opts)

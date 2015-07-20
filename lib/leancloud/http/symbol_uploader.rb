@@ -8,10 +8,6 @@ module LeanCloud
   # LeanCloud symbol uploader
   class SymbolUploader < LeanHTTP
 
-    def initialize(opts)
-      @options = opts
-    end
-
     private
 
     attr_reader :dsym_path
