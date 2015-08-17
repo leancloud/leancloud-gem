@@ -6,11 +6,11 @@ module LeanCloud
   class LeanHTTP < LeanObject
 
     DOMAINS = {
-      "cn" => 'leancloud.cn',
+      "cn" => 'api.leancloud.cn',
       "us" => 'avoscloud.us'
     }
 
-    BASE_URL_FMT = 'https://api.%{domain}/1.1/'
+    BASE_URL_FMT = 'https://%{domain}/1.1/'
 
     def initialize(opts = {})
       @options = opts

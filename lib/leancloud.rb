@@ -9,5 +9,5 @@ Encoding.default_internal = Encoding::UTF_8
 
 # LeanCloud main module
 module LeanCloud
-  VERSION = '0.0.12'
+  VERSION = '0.0.13'
 end
