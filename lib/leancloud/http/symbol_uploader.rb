@@ -31,7 +31,7 @@ module LeanCloud
     end
 
     def lipo_dsym_archs
-      info = %x(lipo -info #{dsym_macho} 2>/dev/null)
+      info = %x(lipo -info \"#{dsym_macho}\" 2>/dev/null)
       arch_list = info[/[^:]+$/].strip
       arch_list.split(' ')
     end
@@ -57,7 +57,7 @@ module LeanCloud
     def dump_cmd_template
       <<-EOT.gsub(/^[ \t]+/, '')
       {{#archs}}
-      leancloud_dump_syms -a {{name}} #{dsym_path} > {{path}} 2>/dev/null
+      leancloud_dump_syms -a {{name}} "#{dsym_path}" > {{path}} 2>/dev/null
       {{/archs}}
       EOT
     end
